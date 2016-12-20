@@ -37,6 +37,15 @@ int main(int argc, char *argv[]) {
 			printf("%s\n", choices_get(&choices, i));
 		}
 	} else {
+		if (options.select_1) {
+			choices_search(&choices, options.init_search ? options.init_search : "");
+			if (choices_available(&choices) == 1) {
+				printf("%s\n", choices_get(&choices, 0));
+				choices_destroy(&choices);
+				return 0;
+			}
+		}
+
 		/* interactive */
 		tty_t tty;
 		tty_init(&tty, options.tty_filename);

@@ -182,4 +182,12 @@ class FzyTest < Minitest::Test
     @tty.send_keys('foo')
     @tty.assert_matches "(1/2)> foo\nfoo"
   end
+
+  def test_select_1
+    @tty = TTYtest.new_terminal(%{echo -n "foo" | #{FZY_PATH} --select-1})
+    @tty.assert_matches "foo"
+
+    @tty = TTYtest.new_terminal(%{echo -n "foo\nbar" | #{FZY_PATH} --select-1})
+    @tty.assert_matches ">\nfoo\nbar"
+  end
 end
