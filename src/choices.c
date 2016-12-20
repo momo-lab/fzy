@@ -138,6 +138,10 @@ size_t choices_available(choices_t *c) {
 	return c->available;
 }
 
+size_t choices_size(choices_t *c) {
+	return c->size;
+}
+
 struct worker {
 	pthread_t thread_id;
 	choices_t *choices;

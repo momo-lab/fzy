@@ -174,4 +174,12 @@ class FzyTest < Minitest::Test
     @tty.assert_matches ''
     @tty.assert_cursor_position(y: 0, x: 0)
   end
+
+  def test_show_count
+    @tty = TTYtest.new_terminal(%{echo -n "foo\nbar" | #{FZY_PATH} --show-count})
+    @tty.assert_matches "(2/2)>\nfoo\nbar"
+
+    @tty.send_keys('foo')
+    @tty.assert_matches "(1/2)> foo\nfoo"
+  end
 end
