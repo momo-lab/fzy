@@ -229,6 +229,8 @@ static const keybinding_t keybindings[] = {{"\x7f", action_del_char},	/* DEL */
 					   {KEY_CTRL('K'), action_prev},	 /* C-K */
 					   {KEY_CTRL('N'), action_next},	 /* C-N */
 					   {KEY_CTRL('J'), action_next},	 /* C-J */
+					   {KEY_CTRL('B'), action_pageup},	 /* C-B */
+					   {KEY_CTRL('F'), action_pagedown},	 /* C-F */
 
 					   {"\x1b[A", action_prev}, /* UP */
 					   {"\x1bOA", action_prev}, /* UP */
