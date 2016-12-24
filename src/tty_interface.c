@@ -22,7 +22,7 @@ static void clear(tty_interface_t *state) {
 	tty_flush(tty);
 }
 
-static void draw_match(tty_interface_t *state, const char *choice, int selected) {
+static void draw_match(tty_interface_t *state, const char *choice, int selected, int multi_selected) {
 	tty_t *tty = state->tty;
 	options_t *options = state->options;
 	char *search = state->last_search;
@@ -35,6 +35,9 @@ static void draw_match(tty_interface_t *state, const char *choice, int selected)
 	score_t score = match_positions(search, choice, &positions[0]);
 
 	size_t maxwidth = tty_getwidth(tty);
+
+	if (options->multi)
+		tty_printf(tty, multi_selected ? "*" : " ");
 
 	if (options->show_scores) {
 		if (score == SCORE_MIN) {
@@ -93,7 +96,7 @@ static void draw(tty_interface_t *state) {
 		tty_clearline(tty);
 		const char *choice = choices_get(choices, i);
 		if (choice) {
-			draw_match(state, choice, i == choices->selection);
+			draw_match(state, choice, i == choices->selection, choices_multi_select_get(choices, i));
 		}
 	}
 	if (num_lines > 0) {
@@ -124,13 +127,22 @@ static void action_emit(tty_interface_t *state) {
 	/* ttyout should be flushed before outputting on stdout */
 	tty_close(state->tty);
 
-	const char *selection = choices_get(state->choices, state->choices->selection);
-	if (selection) {
-		/* output the selected result */
-		printf("%s\n", selection);
+	size_t size = choices_multi_select_size(state->choices);
+	if (size == 0) {
+		const char *selection = choices_get(state->choices, state->choices->selection);
+		if (selection) {
+			/* output the selected result */
+			printf("%s\n", selection);
+		} else {
+			/* No match, output the query instead */
+			printf("%s\n", state->search);
+		}
 	} else {
-		/* No match, output the query instead */
-		printf("%s\n", state->search);
+		size_t *indexes = choices_multi_select_indexes(state->choices);
+		for (size_t i = 0; i < size; i++) {
+			printf("%s\n", choices_getstring(state->choices, indexes[i]));
+		}
+		free(indexes);
 	}
 
 	state->exit = EXIT_SUCCESS;
@@ -190,6 +202,13 @@ static void action_exit(tty_interface_t *state) {
 	state->exit = EXIT_FAILURE;
 }
 
+static void action_multi_select_toggle(tty_interface_t *state) {
+	if (!state->options->multi) return;
+	update_state(state);
+	choices_multi_select_toggle(state->choices, state->choices->selection);
+	action_next(state);
+}
+
 static void append_search(tty_interface_t *state, char ch) {
 	char *search = state->search;
 	size_t search_size = strlen(search);
@@ -227,7 +246,7 @@ static const keybinding_t keybindings[] = {{"\x7f", action_del_char},	/* DEL */
 					   {KEY_CTRL('H'), action_del_char}, /* Backspace (C-H) */
 					   {KEY_CTRL('W'), action_del_word}, /* C-W */
 					   {KEY_CTRL('U'), action_del_all},  /* C-U */
-					   {KEY_CTRL('I'), action_autocomplete}, /* TAB (C-I ) */
+					   {KEY_CTRL('L'), action_autocomplete}, /* C-L */
 					   {KEY_CTRL('C'), action_exit},	 /* C-C */
 					   {KEY_CTRL('D'), action_exit},	 /* C-D */
 					   {KEY_CTRL('M'), action_emit},	 /* CR */
@@ -237,6 +256,7 @@ static const keybinding_t keybindings[] = {{"\x7f", action_del_char},	/* DEL */
 					   {KEY_CTRL('J'), action_next},	 /* C-J */
 					   {KEY_CTRL('B'), action_pageup},	 /* C-B */
 					   {KEY_CTRL('F'), action_pagedown},	 /* C-F */
+					   {KEY_CTRL('I'), action_multi_select_toggle}, /* TAB (C-I) */
 
 					   {"\x1b[A", action_prev}, /* UP */
 					   {"\x1bOA", action_prev}, /* UP */

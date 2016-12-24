@@ -4,10 +4,12 @@
 #include <stdio.h>
 
 #include "match.h"
+#include "multi_select.h"
 
 struct scored_result {
 	score_t score;
 	const char *str;
+	size_t index;
 };
 
 typedef struct {
@@ -23,6 +25,8 @@ typedef struct {
 	size_t available;
 	size_t selection;
 
+	multi_select_t multi;
+
 	unsigned int worker_count;
 } choices_t;
 
@@ -34,8 +38,13 @@ size_t choices_available(choices_t *c);
 size_t choices_size(choices_t *c);
 void choices_search(choices_t *c, const char *search);
 const char *choices_get(choices_t *c, size_t n);
+const char *choices_getstring(choices_t *c, size_t i);
 score_t choices_getscore(choices_t *c, size_t n);
 void choices_prev(choices_t *c);
 void choices_next(choices_t *c);
+void choices_multi_select_toggle(choices_t *c, size_t n);
+int choices_multi_select_get(choices_t *c, size_t n);
+size_t choices_multi_select_size(choices_t *c);
+size_t *choices_multi_select_indexes(choices_t *c);
 
 #endif
