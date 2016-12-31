@@ -79,8 +79,14 @@ static void draw(tty_interface_t *state) {
 			start = available - num_lines;
 		}
 	}
+	const int MAX_SIZE = 64;
+	char size_info[MAX_SIZE];
+	size_info[0] = '\0';
+	if (options->show_count) {
+		snprintf(size_info, MAX_SIZE, "(%zu/%zu)", choices_available(choices), choices_size(choices));
+	}
 	tty_setcol(tty, 0);
-	tty_printf(tty, "%s%s", options->prompt, state->search);
+	tty_printf(tty, "%s%s%s", size_info, options->prompt, state->search);
 	tty_clearline(tty);
 	for (size_t i = start; i < start + num_lines; i++) {
 		tty_printf(tty, "\n");
@@ -93,7 +99,7 @@ static void draw(tty_interface_t *state) {
 	if (num_lines > 0) {
 		tty_moveup(tty, num_lines);
 	}
-	tty_setcol(tty, strlen(options->prompt) + strlen(state->search));
+	tty_setcol(tty, strlen(size_info) + strlen(options->prompt) + strlen(state->search));
 	tty_flush(tty);
 }
 

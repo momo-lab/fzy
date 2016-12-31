@@ -31,6 +31,7 @@ void choices_fread(choices_t *c, FILE *file);
 void choices_destroy(choices_t *c);
 void choices_add(choices_t *c, const char *choice);
 size_t choices_available(choices_t *c);
+size_t choices_size(choices_t *c);
 void choices_search(choices_t *c, const char *search);
 const char *choices_get(choices_t *c, size_t n);
 score_t choices_getscore(choices_t *c, size_t n);

@@ -15,6 +15,7 @@ static const char *usage_str =
     " -e, --show-matches=QUERY Output the sorted matches of QUERY\n"
     " -t, --tty=TTY            Specify file to use as TTY device (default /dev/tty)\n"
     " -s, --show-scores        Show the scores of each match\n"
+    " -c, --show-count         Show the count of matching lines\n"
     " -h, --help     Display this help and exit\n"
     " -v, --version  Output version information and exit\n";
 
@@ -28,6 +29,7 @@ static struct option longopts[] = {{"show-matches", required_argument, NULL, 'e'
 				   {"tty", required_argument, NULL, 't'},
 				   {"prompt", required_argument, NULL, 'p'},
 				   {"show-scores", no_argument, NULL, 's'},
+				   {"show-count", no_argument, NULL, 'c'},
 				   {"version", no_argument, NULL, 'v'},
 				   {"benchmark", optional_argument, NULL, 'b'},
 				   {"help", no_argument, NULL, 'h'},
@@ -40,6 +42,7 @@ void options_set_defaults(options_t *options) {
 	options->init_search = NULL;
 	options->tty_filename = "/dev/tty";
 	options->show_scores = 0;
+	options->show_count = 0;
 	options->num_lines = 10;
 	options->scrolloff = 1;
 	options->prompt = "> ";
@@ -49,13 +52,16 @@ void options_parse(options_t *options, int argc, char *argv[]) {
 	options_set_defaults(options);
 
 	int c;
-	while ((c = getopt_long(argc, argv, "vhse:q:l:t:p:", longopts, NULL)) != -1) {
+	while ((c = getopt_long(argc, argv, "vhsce:q:l:t:p:", longopts, NULL)) != -1) {
 		switch (c) {
 			case 'v':
 				printf("%s " VERSION " (c) 2014 John Hawthorn\n", argv[0]);
 				exit(EXIT_SUCCESS);
 			case 's':
 				options->show_scores = 1;
+				break;
+			case 'c':
+				options->show_count = 1;
 				break;
 			case 'q':
 				options->init_search = optarg;
