@@ -105,6 +105,8 @@ void choices_init(choices_t *c) {
 	c->capacity = c->size = 0;
 	choices_resize(c, INITIAL_CHOICE_CAPACITY);
 
+	multi_select_init(&c->multi);
+
 	c->worker_count = (int)sysconf(_SC_NPROCESSORS_ONLN);
 
 	choices_reset_search(c);
@@ -122,6 +124,8 @@ void choices_destroy(choices_t *c) {
 	free(c->results);
 	c->results = NULL;
 	c->available = c->selection = 0;
+
+	multi_select_destroy(&c->multi);
 }
 
 void choices_add(choices_t *c, const char *choice) {
@@ -163,6 +167,7 @@ static void *choices_search_worker(void *data) {
 		if (has_match(w->search, c->strings[i])) {
 			w->results[w->available].str = c->strings[i];
 			w->results[w->available].score = match(w->search, c->strings[i]);
+			w->results[w->available].index = i;
 			w->available++;
 		}
 	}
@@ -220,6 +225,14 @@ const char *choices_get(choices_t *c, size_t n) {
 	}
 }
 
+const char *choices_getstring(choices_t *c, size_t i) {
+	if (i < c->size) {
+		return c->strings[i];
+	} else {
+		return NULL;
+	}
+}
+
 score_t choices_getscore(choices_t *c, size_t n) {
 	return c->results[n].score;
 }
@@ -232,4 +245,20 @@ void choices_prev(choices_t *c) {
 void choices_next(choices_t *c) {
 	if (c->available)
 		c->selection = (c->selection + 1) % c->available;
+}
+
+void choices_multi_select_toggle(choices_t *c, size_t n) {
+	multi_select_toggle(&c->multi, c->results[n].index);
+}
+
+int choices_multi_select_get(choices_t *c, size_t n) {
+	return multi_select_get(&c->multi, c->results[n].index);
+}
+
+size_t choices_multi_select_size(choices_t *c) {
+	return multi_select_size(&c->multi);
+}
+
+size_t *choices_multi_select_indexes(choices_t *c) {
+	return multi_select_indexes(&c->multi);
 }

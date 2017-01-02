@@ -11,6 +11,7 @@ typedef struct {
 	unsigned int num_lines;
 	unsigned int scrolloff;
 	const char *prompt;
+	int multi;
 	int select_1;
 } options_t;
 
