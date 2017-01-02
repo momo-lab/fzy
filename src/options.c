@@ -16,6 +16,7 @@ static const char *usage_str =
     " -t, --tty=TTY            Specify file to use as TTY device (default /dev/tty)\n"
     " -s, --show-scores        Show the scores of each match\n"
     " -c, --show-count         Show the count of matching lines\n"
+    " -T, --tabstop=SPACES     Number of spaces for a tab character (default 8)\n"
     " -m, --multi              Enable multi-select with tab\n"
     " -1, --select-1           Automatically select the only match\n"
     " -h, --help     Display this help and exit\n"
@@ -32,6 +33,7 @@ static struct option longopts[] = {{"show-matches", required_argument, NULL, 'e'
 				   {"prompt", required_argument, NULL, 'p'},
 				   {"show-scores", no_argument, NULL, 's'},
 				   {"show-count", no_argument, NULL, 'c'},
+				   {"tabstop", required_argument, NULL, 'T'},
 				   {"version", no_argument, NULL, 'v'},
 				   {"benchmark", optional_argument, NULL, 'b'},
 				   {"help", no_argument, NULL, 'h'},
@@ -47,6 +49,7 @@ void options_set_defaults(options_t *options) {
 	options->tty_filename = "/dev/tty";
 	options->show_scores = 0;
 	options->show_count = 0;
+	options->tabstop = 8;
 	options->num_lines = 10;
 	options->scrolloff = 1;
 	options->prompt = "> ";
@@ -58,7 +61,7 @@ void options_parse(options_t *options, int argc, char *argv[]) {
 	options_set_defaults(options);
 
 	int c;
-	while ((c = getopt_long(argc, argv, "vhscm1e:q:l:t:p:", longopts, NULL)) != -1) {
+	while ((c = getopt_long(argc, argv, "vhscm1e:q:l:t:p:T:", longopts, NULL)) != -1) {
 		switch (c) {
 			case 'v':
 				printf("%s " VERSION " (c) 2014 John Hawthorn\n", argv[0]);
@@ -69,6 +72,16 @@ void options_parse(options_t *options, int argc, char *argv[]) {
 			case 'c':
 				options->show_count = 1;
 				break;
+			case 'T': {
+				int tabstop;
+				if (sscanf(optarg, "%d", &tabstop) != 1 || tabstop < 1) {
+					fprintf(stderr, "Invalid format for --tabstop: %s\n", optarg);
+					fprintf(stderr, "Must be a positive integer\n");
+					usage(argv[0]);
+					exit(EXIT_FAILURE);
+				}
+				options->tabstop = tabstop;
+			} break;
 			case 'q':
 				options->init_search = optarg;
 				break;

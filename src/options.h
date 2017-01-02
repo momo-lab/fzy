@@ -8,6 +8,7 @@ typedef struct {
 	const char *tty_filename;
 	int show_scores;
 	int show_count;
+	unsigned int tabstop;
 	unsigned int num_lines;
 	unsigned int scrolloff;
 	const char *prompt;
